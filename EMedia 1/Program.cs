@@ -10,10 +10,10 @@ if (!File.Exists(filename))
     return;
 }
 
-await using var stream = File.Open(filename, FileMode.Open);
+using var stream = File.Open(filename, FileMode.Open);
 var reader = new PngReader(stream);
 
-await reader.ReadAsync();
+reader.Read();
 
 void PrintError(string error)
 {
