@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Buffers.Binary;
+using System.IO.Compression;
+using System.Text;
 using EMedia_1.Chunks;
 
 namespace EMedia_1;
@@ -12,6 +14,7 @@ public class PngChunk
     public bool CrcValid { get; }
 
     public virtual bool AllowMultiple => false;
+    public virtual bool RemoveWhenAnonymizing => false;
     
     public virtual void PrintData() => Console.WriteLine($"Type {Type}, Length: {Length}, CRC: {CrcValid}");
 
@@ -59,10 +62,29 @@ public class PngChunk
             PngChunkType.tRNS => new tRNSChunk(length, data, typeName, crc, crcValid),
             PngChunkType.tIME => new tIMEChunk(length, data, typeName, crc, crcValid),
             PngChunkType.zTXt => new zTXtChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.pHYs => new pHYsChunk(length, data, typeName, crc, crcValid),
             _ => new PngChunk(length, data, typeName, crc, crcValid)
         };
     }
-    
+
+    public void AppendToStream(Stream stream)
+    {
+        stream.WriteUInt(Length);
+        stream.WriteAsciiString(Type);
+        stream.Write(Data);
+        stream.WriteUInt(Crc);
+    }
+
+    protected static string Decompress(byte[] data, Encoding encoding)
+    {
+        using var decompressedStream = new MemoryStream();
+        using var compressStream = new MemoryStream(data);
+        using var deflateStream = new DeflateStream(compressStream, CompressionMode.Decompress);
+        
+        deflateStream.CopyTo(decompressedStream);
+        return encoding.GetString(decompressedStream.ToArray());
+    }
+
     protected PngChunk(uint length, byte[] data, string type, uint crc, bool crcValid)
     {
         Length = length;
@@ -89,8 +111,6 @@ public class PngChunk
     public const string sBIT = "sBIT"; // Significant bits
     public const string sPLT = "sPLT"; // Suggested palette
     public const string tIME = "tIME"; // Image last-modification time
-
-
 }
 
 public enum PngChunkType

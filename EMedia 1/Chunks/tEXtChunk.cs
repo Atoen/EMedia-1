@@ -8,6 +8,7 @@ public class tEXtChunk : PngChunk
     public string Text { get; }
     
     public override bool AllowMultiple => true;
+    public override bool RemoveWhenAnonymizing => true;
 
     public tEXtChunk(uint length, byte[] data, string type, uint crc, bool crcValid) :
         base(length, data, type, crc, crcValid)

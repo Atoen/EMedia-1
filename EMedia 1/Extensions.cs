@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using System.Text;
 
 namespace EMedia_1;
 
@@ -30,5 +31,18 @@ public static class Extensions
         }
 
         return buffer;
+    }
+
+    public static void WriteUInt(this Stream stream, uint num)
+    {
+        Span<byte> span = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt32BigEndian(span, num);
+        stream.Write(span);
+    }
+    
+    public static void WriteAsciiString(this Stream stream, string text)
+    {
+        var bytes = Encoding.ASCII.GetBytes(text);
+        stream.Write(bytes);
     }
 }
