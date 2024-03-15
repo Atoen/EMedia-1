@@ -1,13 +1,13 @@
 ﻿namespace EMedia_1;
-public class Crc32
+public static class Crc32
 {
     private const uint Generator = 0xEDB88320;
 
-    private readonly uint[] _checksumTable;
+    private static readonly uint[] ChecksumTable;
     
-    public Crc32()
+    static Crc32()
     {
-        _checksumTable = Enumerable.Range(0, 256).Select(i =>
+        ChecksumTable = Enumerable.Range(0, 256).Select(i =>
         {
             var tableEntry = (uint) i;
             for (var j = 0; j < 8; j++)
@@ -20,9 +20,9 @@ public class Crc32
         }).ToArray();
     }
 
-    public uint Get(IEnumerable<byte> bytes)
+    public static uint Get(IEnumerable<byte> bytes)
     {
             return ~bytes.Aggregate(0xFFFFFFFF, (checksumRegister, currentByte) => 
-                      _checksumTable[(checksumRegister & 0xFF) ^ currentByte] ^ (checksumRegister >> 8));
+                      ChecksumTable[(checksumRegister & 0xFF) ^ currentByte] ^ (checksumRegister >> 8));
     }
 }

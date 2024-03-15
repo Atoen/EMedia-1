@@ -2,7 +2,7 @@
 
 Console.WriteLine("Enter filename to open");
 
-var filename = Console.ReadLine();
+var filename = @"C:\Users\bacht\Pictures\Screenshots\Zrzut ekranu 2024-03-12 212455.png";
 
 if (!File.Exists(filename))
 {
