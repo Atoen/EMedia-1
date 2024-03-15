@@ -1,4 +1,6 @@
-﻿namespace EMedia_1;
+﻿using EMedia_1.Chunks;
+
+namespace EMedia_1;
 
 public class PngReader(Stream stream)
 {
@@ -10,13 +12,17 @@ public class PngReader(Stream stream)
         var isPng = CheckSignature();
         Console.WriteLine(isPng ? "File is png" : "File is not png");
 
-        PngChunk chunk;
+        var chunks = new List<PngChunk>();
 
+        PngChunk chunk;
         do
         {
             chunk = PngChunk.Create(stream);
-            Console.WriteLine($"Read chunk: {chunk.Type} {chunk.Length} valid: {chunk.CrcValid}");
-        } while (chunk.Type != PngChunk.IEND);
+            chunk.PrintData();
+            chunks.Add(chunk);
+        } while (chunk is not IENDChunk);
+
+        Console.WriteLine($"Chunks total: {chunk.Length}");
     }
 
     private bool CheckSignature()
@@ -27,52 +33,4 @@ public class PngReader(Stream stream)
         return buffer.Take(bytesRead)
             .SequenceEqual(PngSignature);
     }
-
-    // private void ReadIHDRChunk()
-    // {
-    //     var lengthBytes = ReadBytes(4);
-    //     var length = BinaryPrimitives.ReadUInt32BigEndian(lengthBytes);
-    //     
-    //     Console.WriteLine($"Length: {length}");
-    //     if (length != IHDRChunkLength)
-    //     {
-    //         throw new InvalidOperationException("Invalid IHDR chunk length");
-    //     }
-    //     
-    //     var typeBytes = ReadBytes(4).AsSpan();
-    //     var type = Encoding.ASCII.GetString(typeBytes);
-    //
-    //     Console.WriteLine($"Type: {type}");
-    //     if (type != IHDR)
-    //     {
-    //         throw new InvalidOperationException("First chunk is not IHDR");
-    //     }
-    //     
-    //     var data = ReadBytes(length).AsSpan();
-    //
-    //     var width = data[..4].ReadUint();
-    //     var height = data[4..8].ReadUint();
-    //     var bitDepth = data[8];
-    //     var colorType = data[9];
-    //     var compressionMethod = data[10];
-    //     var filterMethod = data[11];
-    //     var interlaceMethod = data[12];
-    //
-    //     // Console.WriteLine($"Width: {width}");
-    //     // Console.WriteLine($"Height: {height}");
-    //     // Console.WriteLine($"Bit Depth: {bitDepth}");
-    //     // Console.WriteLine($"Color Type: {colorType}");
-    //     // Console.WriteLine($"Compression Method: {compressionMethod}");
-    //     // Console.WriteLine($"Filter Method: {filterMethod}");
-    //     // Console.WriteLine($"Interlace Method: {interlaceMethod}");
-    //
-    //     var imageData = new ImageData(width, height, bitDepth, colorType, compressionMethod, filterMethod, interlaceMethod);
-    //
-    //     Console.WriteLine($"Image data: {imageData}");
-    //     
-    //     var crc = ReadBytes(4).ReadUint();
-    //     var crcCheck = _crc32.Get([..typeBytes, ..data]);
-    //
-    //     Console.WriteLine($"crc {crc} == {crcCheck}: {crc == crcCheck}");
-    // }
 }

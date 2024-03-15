@@ -8,6 +8,12 @@ public static class Extensions
     {
         return BinaryPrimitives.ReadUInt32BigEndian(span);
     }
+
+    public static double GetFixedPoint(this Span<byte> span)
+    {
+        var num = BinaryPrimitives.ReadUInt32BigEndian(span);
+        return num / 100000.0;
+    }
     
     public static uint GetUint(this byte[] array)
     {

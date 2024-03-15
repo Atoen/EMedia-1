@@ -1,8 +1,6 @@
 ﻿using EMedia_1;
 
-Console.WriteLine("Enter filename to open");
-
-var filename = @"C:\Users\bacht\Pictures\Screenshots\Zrzut ekranu 2024-03-12 212455.png";
+var filename = @"C:\Users\Artur\Downloads\good_text.png";
 
 if (!File.Exists(filename))
 {

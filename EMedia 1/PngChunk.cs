@@ -1,10 +1,76 @@
 ﻿using System.Text;
+using EMedia_1.Chunks;
 
 namespace EMedia_1;
 
 public class PngChunk
 {
-    public const int IHDRChunkLength = 13;
+    public uint Length { get; }
+    public byte[] Data { get; }
+    public string Type { get; }
+    public uint Crc { get; }
+    public bool CrcValid { get; }
+
+    public virtual bool AllowMultiple => false;
+    
+    public virtual void PrintData() => Console.WriteLine($"Type {Type}, Length: {Length}, CRC: {CrcValid}");
+
+    protected virtual void EnsureValid() { }
+    
+    public static PngChunk Create(Stream stream)
+    {
+        var length = stream.ReadBytes(4).GetUint();
+        var typeBytes = stream.ReadBytes(4);
+        
+        var data = stream.ReadBytes(length);
+        var crc = stream.ReadBytes(4).GetUint();
+
+        var chunk = CreateTyped(length, typeBytes, data, crc);
+        chunk.EnsureValid();
+
+        return chunk;
+    }
+
+    private static PngChunk CreateTyped(uint length, byte[] typeBytes, byte[] data, uint crc)
+    {
+        var typeName = Encoding.ASCII.GetString(typeBytes);
+        if (!Enum.TryParse<PngChunkType>(typeName, out var type))
+        {
+            Console.WriteLine($"Unknown chunk type: {typeName}");
+        }
+
+        var expectedCrc = Crc32.Get([..typeBytes, ..data]);
+        var crcValid = expectedCrc == crc;
+        if (!crcValid)
+        {
+            Console.WriteLine($"Crc value is invalid. Expected: {expectedCrc}, actual: {crc}");
+        }
+
+        return type switch
+        {
+            PngChunkType.IHDR => new IHDRChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.tEXt => new tEXtChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.IDAT => new IDATChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.IEND => new IENDChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.gAMA => new gAMAChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.sRGB => new sRGBChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.PLTE => new PLTEChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.cHRM => new cHRMChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.tRNS => new tRNSChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.tIME => new tIMEChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.zTXt => new zTXtChunk(length, data, typeName, crc, crcValid),
+            _ => new PngChunk(length, data, typeName, crc, crcValid)
+        };
+    }
+    
+    protected PngChunk(uint length, byte[] data, string type, uint crc, bool crcValid)
+    {
+        Length = length;
+        Data = data;
+        Type = type;
+        Crc = crc;
+        CrcValid = crcValid;
+    }
     
     public const string IHDR = "IHDR"; // Image header
     public const string IEND = "IEND"; // Image end
@@ -23,30 +89,8 @@ public class PngChunk
     public const string sBIT = "sBIT"; // Significant bits
     public const string sPLT = "sPLT"; // Suggested palette
     public const string tIME = "tIME"; // Image last-modification time
-    
-    public static PngChunk Create(Stream stream)
-    {
-        var length = stream.ReadBytes(4).GetUint();
-        var typeBytes = stream.ReadBytes(4);
-        var type = Encoding.ASCII.GetString(typeBytes);
-        var data = stream.ReadBytes(length);
-        var crc = stream.ReadBytes(4).GetUint();
 
-        return new PngChunk
-        {
-            Length = length,
-            Type = type,
-            Data = data,
-            Crc = crc,
-            CrcValid = Crc32.Get([..typeBytes, ..data]) == crc
-        };
-    }
-    
-    public required uint Length { get; init; }
-    public required string Type { get; init; }
-    public required byte[] Data { get; init; }
-    public required uint Crc { get; init; }
-    public required bool CrcValid { get; init; }
+
 }
 
 public enum PngChunkType
