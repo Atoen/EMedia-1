@@ -1,5 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text;
 using EMedia_1.Chunks;
 
@@ -75,14 +74,19 @@ public class PngChunk
         stream.WriteUInt(Crc);
     }
 
-    protected static string Decompress(byte[] data, Encoding encoding)
+    public static byte[] Decompress(byte[] data)
     {
         using var decompressedStream = new MemoryStream();
         using var compressStream = new MemoryStream(data);
         using var deflateStream = new DeflateStream(compressStream, CompressionMode.Decompress);
         
         deflateStream.CopyTo(decompressedStream);
-        return encoding.GetString(decompressedStream.ToArray());
+        return decompressedStream.ToArray();
+    }
+
+    public static string DecompressString(byte[] data, Encoding encoding)
+    {
+        return encoding.GetString(Decompress(data));
     }
 
     protected PngChunk(uint length, byte[] data, string type, uint crc, bool crcValid)

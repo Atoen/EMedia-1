@@ -1,5 +1,4 @@
-﻿using System.IO.Compression;
-using System.Text;
+﻿using System.Text;
 
 namespace EMedia_1.Chunks;
 
@@ -19,7 +18,7 @@ public class zTXtChunk : PngChunk
 
         Keyword = Encoding.Latin1.GetString(span[..nullIndex]);
         CompressionMethod = (CompressionMethod) span[nullIndex + 1];
-        Text = Decompress(data[(nullIndex + 4)..], Encoding.Latin1); // 1 after compressionMethod + magic offset of 2
+        Text = DecompressString(data[(nullIndex + 4)..], Encoding.Latin1); // 1 after compressionMethod + magic offset of 2
     }
 
     public override void PrintData()

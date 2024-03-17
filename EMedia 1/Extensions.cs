@@ -1,5 +1,6 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
+using EMedia_1.Chunks;
 
 namespace EMedia_1;
 
@@ -45,4 +46,14 @@ public static class Extensions
         var bytes = Encoding.ASCII.GetBytes(text);
         stream.Write(bytes);
     }
+
+    public static int GetByteWidth(this ColorType colorType) => colorType switch
+    {
+        ColorType.Grayscale => 1,
+        ColorType.RGB => 3,
+        ColorType.PaletteIndex => 1,
+        ColorType.GrayscaleWithAlpha => 2,
+        ColorType.RGBA => 4,
+        _ => throw new ArgumentOutOfRangeException(nameof(colorType), colorType, null)
+    };
 }
