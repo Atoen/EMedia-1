@@ -1,6 +1,6 @@
 ﻿using EMedia_1;
 
-var filename = @"C:\Users\Artur\Downloads\good_text.png";
+var filename = @"C:\Users\Michal\Desktop\good_text.png";
 
 if (!File.Exists(filename))
 {

@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿using System.Buffers.Binary;
+using System.IO.Compression;
 using System.Text;
 using EMedia_1.Chunks;
 
@@ -15,7 +16,7 @@ public class PngChunk
     public virtual bool AllowMultiple => false;
     public virtual bool RemoveWhenAnonymizing => false;
     
-    public virtual void PrintData() => Console.WriteLine($"Type {Type}, Length: {Length}, CRC: {CrcValid}");
+    public virtual void PrintData() => Console.WriteLine($"Type: {Type}, Length: {Length}, CRC: {CrcValid}");
 
     protected virtual void EnsureValid() { }
     
@@ -62,6 +63,13 @@ public class PngChunk
             PngChunkType.tIME => new tIMEChunk(length, data, typeName, crc, crcValid),
             PngChunkType.zTXt => new zTXtChunk(length, data, typeName, crc, crcValid),
             PngChunkType.pHYs => new pHYsChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.bKGD => new bKGDChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.hIST => new hISTChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.iTXt => new iTXtChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.oFFs => new oFFsChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.sBIT => new sBITChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.sPLT => new sPLTChunk(length, data, typeName, crc, crcValid),
+            PngChunkType.sTER => new sTERChunk(length, data, typeName, crc, crcValid),
             _ => new PngChunk(length, data, typeName, crc, crcValid)
         };
     }
@@ -97,24 +105,6 @@ public class PngChunk
         Crc = crc;
         CrcValid = crcValid;
     }
-    
-    public const string IHDR = "IHDR"; // Image header
-    public const string IEND = "IEND"; // Image end
-    public const string PLTE = "PLTE"; // Image palette
-    public const string sRGB = "sRGB"; // Standard RGB color space
-    public const string gAMA = "gAMA"; // Gamma
-    public const string pHYs = "pHYs"; // Physical pixel dimensions
-    public const string IDAT = "IDAT"; // Image data
-    public const string cHRM = "cHRM"; // Chromaticity
-    public const string iCCP = "iCCP"; // ICC color profile
-    public const string tEXt = "tEXt"; // Textual data
-    public const string zTXt = "zTXt"; // Compressed textual data
-    public const string iTXt = "iTXt"; // International textual data
-    public const string bKGD = "bKGD"; // Background color
-    public const string hIST = "hIST"; // Image histogram
-    public const string sBIT = "sBIT"; // Significant bits
-    public const string sPLT = "sPLT"; // Suggested palette
-    public const string tIME = "tIME"; // Image last-modification time
 }
 
 public enum PngChunkType
@@ -127,7 +117,6 @@ public enum PngChunkType
     cHRM, // Chromaticity
     sRGB, // Standard RGB color space
     gAMA, // Gamma
-    iCCP, // ICC color profile
     tEXt, // Textual data
     zTXt, // Compressed textual data
     iTXt, // International textual data
@@ -136,5 +125,7 @@ public enum PngChunkType
     pHYs, // Physical pixel dimensions
     sBIT, // Significant bits
     sPLT, // Suggested palette
-    tIME  // Image last-modification time
+    tIME, // Image last-modification time
+    oFFs, // Image offset
+    sTER  // Stereo image indicator
 }
