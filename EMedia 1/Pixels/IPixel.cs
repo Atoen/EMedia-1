@@ -2,11 +2,9 @@
 
 namespace EMedia_1.Pixels;
 
-public abstract class Pixel
+public interface IPixel
 {
-    public abstract string Print();
-
-    public static Pixel Create(ColorType colorType, byte[] buffer, int offset = 0)
+    static IPixel Create(ColorType colorType, byte[] buffer, int offset = 0)
     {
         return colorType switch
         {
@@ -16,4 +14,8 @@ public abstract class Pixel
             _ => throw new ArgumentOutOfRangeException(nameof(colorType), colorType, null)
         };
     }
+
+    string Print();
+    
+    double AverageValue { get; }
 }

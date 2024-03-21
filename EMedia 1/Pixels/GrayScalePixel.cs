@@ -1,8 +1,10 @@
 ﻿namespace EMedia_1.Pixels;
 
-public class GrayScalePixel(byte[] buffer, int offset = 0) : Pixel
+public readonly struct GrayScalePixel(byte[] buffer, int offset = 0) : IPixel
 {
     public byte Intensity { get; } = buffer[offset];
     
-    public override string Print() => $"\x1b[48;2;{Intensity};{Intensity};{Intensity}m  ";
+    public string Print() => $"\x1b[48;2;{Intensity};{Intensity};{Intensity}m  ";
+
+    public double AverageValue => Intensity;
 }
